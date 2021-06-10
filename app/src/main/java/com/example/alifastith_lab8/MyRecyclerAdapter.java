@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,9 +16,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -54,67 +51,6 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
     private Marker currentMarker = null;
     private ItemClickListener itemClickListener;
     private RecyclerView recyclerView;
-
-    // TODO: probably move most of this functionality to HomeActivity class
-    /*public MyRecyclerAdapter(RecyclerView recyclerView, ItemClickListener itemClickListener, List<String> keyList, HashMap<String, PostModel> keyToPost) {
-
-        postsList = new ArrayList<>();
-        this.recyclerView = recyclerView;
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-
-        postsRefListener = allPostsRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                String update = null;
-                if (snapshot.hasChild("lastEditTimestamp"))
-                    update = localDateFormat.format(new Date(Long.parseLong(snapshot.child("lastEditTimestamp").getValue().toString())));
-                PostModel postModel = new PostModel(snapshot.getKey(),
-                        snapshot.child("uid").getValue().toString(),
-                        snapshot.child("description").getValue().toString(),
-                        snapshot.child("url").getValue().toString(),
-                        localDateFormat.format(new Date(Long.parseLong(snapshot.child("timestamp").getValue().toString()))),
-                        update);
-                postsList.add(postModel);
-                notifyItemInserted(postsList.size() - 1);
-                recyclerView.scrollToPosition(postsList.size() - 1);
-            }
-
-            @Override public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                for (int i = 0; i < postsList.size(); i++) {
-                    if (postsList.get(i).postKey.equals(snapshot.getKey())) {
-                        String update = null;
-                        if (snapshot.hasChild("lastEditTimestamp"))
-                            update = localDateFormat.format(new Date(Long.parseLong(snapshot.child("lastEditTimestamp").getValue().toString())));
-                        PostModel userModel = new PostModel(snapshot.getKey(),
-                                snapshot.child("uid").getValue().toString(),
-                                snapshot.child("description").getValue().toString(),
-                                snapshot.child("url").getValue().toString(),
-                                localDateFormat.format(new Date(Long.parseLong(snapshot.child("timestamp").getValue().toString()))),
-                                update);
-                        postsList.remove(i);
-                        postsList.add(i, userModel);
-                        notifyItemChanged(i);
-                        recyclerView.scrollToPosition(i);
-                        break;
-                    }
-                }
-            }
-
-            @Override public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                for (int i = 0; i < postsList.size(); i++) {
-                    if (postsList.get(i).postKey.equals(snapshot.getKey())) {
-                        postsList.remove(i);
-                        notifyItemRemoved(i);
-                        break;
-                    }
-                }
-            }
-
-            @Override public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) { }
-            @Override public void onCancelled(@NonNull DatabaseError error) { }
-        });
-    }*/
 
     public MyRecyclerAdapter(ItemClickListener itemClickListener, RecyclerView recyclerView, List<String> keyList, HashMap<String, PostModel> keyToPost) {
         mAuth = FirebaseAuth.getInstance();
@@ -172,7 +108,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
 
     @NonNull @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_view, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.post_card_view, parent, false);
         final MyViewHolder viewHolder = new MyViewHolder(view);
         return viewHolder;
     }
@@ -191,6 +127,15 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
         // Set the non-changeable field
         String dateText = "Date Created: " + postModel.date;
         holder.dateView.setText(dateText);
+
+        // Set profile image click handler
+        if (!currentUser.getUid().equals(uid)) {
+            holder.profileImage.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), ChatActivity.class);
+                intent.putExtra("target_uid", uid);
+                v.getContext().startActivity(intent);
+            });
+        }
 
         if (currentUser.getUid().equals(uid)) {
             holder.menuImage.setVisibility(View.VISIBLE);
@@ -239,10 +184,13 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
                 holder.nameView.setText(nameText);
                 holder.emailView.setText(emailText);
                 holder.phoneView.setText(phoneText);
-                /* TODO:
-                    1. create an ImageView in the item layout
-                    2. Picasso and load their profile image
-                    3. Create click handler */
+                if (snapshot.child("profilePicture").exists()) {
+                    Picasso.get().load(snapshot.child("profilePicture").getValue().toString())
+                            .transform(new CircleTransform()).into(holder.profileImage);
+                } else { // TODO: default image not working
+                    Picasso.get().load(R.drawable.default_profile)
+                            .transform(new CircleTransform()).into(holder.profileImage);
+                }
             }
             @Override public void onCancelled(@NonNull DatabaseError error) { }
         });
@@ -341,6 +289,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
+        public ImageView profileImage;
         public ImageView menuImage;
         public TextView nameView;
         public TextView emailView;
@@ -364,6 +313,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
 
         public MyViewHolder(View view) {
             super(view);
+            profileImage = view.findViewById(R.id.profile_image);
             menuImage = view.findViewById(R.id.card_menu_image);
             nameView = view.findViewById(R.id.name_view);
             emailView = view.findViewById(R.id.email_view);
