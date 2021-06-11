@@ -68,7 +68,7 @@
             android:text="SIGNUP"
             android:textColor="@color/offWhite"
             android:textSize="20sp"
-            android:background="@drawable/signup_login_button"
+            android:background="@drawable/button_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <Button
@@ -76,7 +76,7 @@
             android:text="LOGIN"
             android:textColor="@color/offWhite"
             android:textSize="20sp"
-            android:background="@drawable/signup_login_button"
+            android:background="@drawable/button_background"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
         <LinearLayout
@@ -90,7 +90,7 @@
                 android:text="Reset Password"
                 android:textSize="12sp"
                 android:textColor="@color/offWhite"
-                android:background="@drawable/signup_login_button"
+                android:background="@drawable/button_background"
                 android:layout_marginRight="2dp"
                 android:layout_weight="1"
                 android:layout_width="0dp"
@@ -100,7 +100,7 @@
                 android:text="Resend Email Verification"
                 android:textSize="12sp"
                 android:textColor="@color/offWhite"
-                android:background="@drawable/signup_login_button"
+                android:background="@drawable/button_background"
                 android:layout_marginLeft="2dp"
                 android:layout_weight="1"
                 android:layout_width="0dp"

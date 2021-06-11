@@ -90,7 +90,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private Uri imageUri = null;
     private RecyclerView recyclerView;
-    private MyRecyclerAdapter myRecyclerAdapter;
+    private PostRecyclerAdapter postRecyclerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,8 +109,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         layoutManager.scrollToPosition(0);
         recyclerView.setLayoutManager(layoutManager);
-        myRecyclerAdapter = new MyRecyclerAdapter(this, recyclerView, keyList, keyToPost);
-        recyclerView.setAdapter(myRecyclerAdapter);
+        postRecyclerAdapter = new PostRecyclerAdapter(this, recyclerView, keyList, keyToPost);
+        recyclerView.setAdapter(postRecyclerAdapter);
 
         //https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -156,7 +156,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        myRecyclerAdapter.removeListener();
+        postRecyclerAdapter.removeListener();
     }
 
     @Override
@@ -300,7 +300,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                             keyList.add(postKey);
                             marker.setTag(postKey);
                             marker.setTitle(postModel.description);
-                            myRecyclerAdapter.notifyItemInserted(keyList.size() - 1);
+                            postRecyclerAdapter.notifyItemInserted(keyList.size() - 1);
                             recyclerView.scrollToPosition(keyList.size() - 1);
                         }
                         @Override public void onCancelled(@NonNull DatabaseError error) { }
@@ -320,7 +320,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
                     if (keyToPost.containsKey(postKey)) {
                         PostModel postModel = keyToPost.get(postKey);
                         postModel.marker.setPosition(new LatLng(location.latitude, location.longitude));
-                        if (myRecyclerAdapter.unsetIfCurrentMarker(postModel.marker)) {
+                        if (postRecyclerAdapter.unsetIfCurrentMarker(postModel.marker)) {
                             onPostImageClick(postModel.marker);
                         }
                     }
@@ -415,7 +415,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Remove the marker selection
         mMap.setOnMyLocationButtonClickListener(() -> {
-            myRecyclerAdapter.unsetCurrentMarker();
+            postRecyclerAdapter.unsetCurrentMarker();
             mFusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(12).build();
@@ -436,14 +436,14 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
         currentMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.marker_red));
         recyclerView.scrollToPosition(keyList.indexOf(key));
         currentMarker.showInfoWindow();
-        myRecyclerAdapter.setCurrentMarker(currentMarker);
+        postRecyclerAdapter.setCurrentMarker(currentMarker);
     }
 
     public void removePost(String key) {
         PostModel postModel = keyToPost.get(key);
         Marker marker = postModel.marker;
         if (!checkLocationPermission()) return;
-        if (myRecyclerAdapter.unsetIfCurrentMarker(marker)) {
+        if (postRecyclerAdapter.unsetIfCurrentMarker(marker)) {
             mFusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(new LatLng(location.getLatitude(), location.getLongitude())).zoom(12).build();
@@ -455,7 +455,7 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (keyList.get(i).equals(key)) {
                 keyList.remove(i);
                 keyToPost.remove(key);
-                myRecyclerAdapter.notifyItemRemoved(i);
+                postRecyclerAdapter.notifyItemRemoved(i);
                 recyclerView.scrollToPosition(i);
                 break;
             }

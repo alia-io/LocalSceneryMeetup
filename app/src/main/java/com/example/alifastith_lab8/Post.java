@@ -5,7 +5,6 @@ import com.google.firebase.database.ServerValue;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO: make fields private
 public class Post {
 
     public String uid;

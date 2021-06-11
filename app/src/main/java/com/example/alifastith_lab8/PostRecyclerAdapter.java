@@ -36,13 +36,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.MyViewHolder> {
+public class PostRecyclerAdapter extends RecyclerView.Adapter<PostRecyclerAdapter.PostViewHolder> {
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
     private DatabaseReference allPostsRef = database.getReference("Posts");
-    private ChildEventListener postsRefListener; // TODO: move to HomeActivity class? Also might need it here to update profile images...
+    private ChildEventListener postsRefListener;
 
     private List<String> keyList;
     private HashMap<String, PostModel> keyToPost;
@@ -52,7 +52,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
     private ItemClickListener itemClickListener;
     private RecyclerView recyclerView;
 
-    public MyRecyclerAdapter(ItemClickListener itemClickListener, RecyclerView recyclerView, List<String> keyList, HashMap<String, PostModel> keyToPost) {
+    public PostRecyclerAdapter(ItemClickListener itemClickListener, RecyclerView recyclerView, List<String> keyList, HashMap<String, PostModel> keyToPost) {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         this.itemClickListener = itemClickListener;
@@ -107,14 +107,14 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
     }
 
     @NonNull @Override
-    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.post_card_view, parent, false);
-        final MyViewHolder viewHolder = new MyViewHolder(view);
+        final PostViewHolder viewHolder = new PostViewHolder(view);
         return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
 
         final PostModel postModel = keyToPost.get(keyList.get(position));
         String uid = postModel.uid;
@@ -184,7 +184,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
                 holder.nameView.setText(nameText);
                 holder.emailView.setText(emailText);
                 holder.phoneView.setText(phoneText);
-                if (snapshot.child("profilePicture").exists()) {
+                if (snapshot.hasChild("profilePicture")) {
                     Picasso.get().load(snapshot.child("profilePicture").getValue().toString())
                             .transform(new CircleTransform()).into(holder.profileImage);
                 } else { // TODO: default image not working
@@ -287,7 +287,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
         return keyList.size();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+    public static class PostViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView profileImage;
         public ImageView menuImage;
@@ -311,7 +311,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.My
         DatabaseReference likesRef;
         ValueEventListener likesRefListener;
 
-        public MyViewHolder(View view) {
+        public PostViewHolder(View view) {
             super(view);
             profileImage = view.findViewById(R.id.profile_image);
             menuImage = view.findViewById(R.id.card_menu_image);

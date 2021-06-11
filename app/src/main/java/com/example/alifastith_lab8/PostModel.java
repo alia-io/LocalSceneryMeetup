@@ -2,7 +2,6 @@ package com.example.alifastith_lab8;
 
 import com.google.android.gms.maps.model.Marker;
 
-// TODO: make fields private
 public class PostModel {
 
     public String postKey;
