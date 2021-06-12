@@ -311,19 +311,19 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<PostRecyclerAdapte
         DatabaseReference likesRef;
         ValueEventListener likesRefListener;
 
-        public PostViewHolder(View view) {
-            super(view);
-            profileImage = view.findViewById(R.id.profile_image);
-            menuImage = view.findViewById(R.id.card_menu_image);
-            nameView = view.findViewById(R.id.name_view);
-            emailView = view.findViewById(R.id.email_view);
-            phoneView = view.findViewById(R.id.phone_view);
-            dateView = view.findViewById(R.id.date_view);
-            updateView = view.findViewById(R.id.update_view);
-            descriptionView = view.findViewById(R.id.description);
-            imageView = view.findViewById(R.id.post_img);
-            likeButton = view.findViewById(R.id.like_btn);
-            likesCount = view.findViewById(R.id.like_count);
+        public PostViewHolder(@NonNull View itemView) {
+            super(itemView);
+            profileImage = itemView.findViewById(R.id.profile_image);
+            menuImage = itemView.findViewById(R.id.card_menu_image);
+            nameView = itemView.findViewById(R.id.name_view);
+            emailView = itemView.findViewById(R.id.email_view);
+            phoneView = itemView.findViewById(R.id.phone_view);
+            dateView = itemView.findViewById(R.id.date_view);
+            updateView = itemView.findViewById(R.id.update_view);
+            descriptionView = itemView.findViewById(R.id.description);
+            imageView = itemView.findViewById(R.id.post_img);
+            likeButton = itemView.findViewById(R.id.like_btn);
+            likesCount = itemView.findViewById(R.id.like_count);
         }
     }
 }

@@ -2,13 +2,16 @@ package com.example.alifastith_lab8;
 
 import com.google.firebase.database.ServerValue;
 
-// TODO: make fields private
+import java.util.HashMap;
+import java.util.Map;
+
 public class User {
 
     public String displayName;
     public String emailAddress;
     public String phoneNumber;
     public Object timestamp;
+    public Map<String, String> chats = new HashMap<String, String>();
 
     public User() { }
 
