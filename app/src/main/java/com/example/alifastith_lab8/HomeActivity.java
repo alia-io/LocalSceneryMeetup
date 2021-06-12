@@ -347,6 +347,8 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (!checkLocationPermission()) return;
 
+        mMap.setMyLocationEnabled(true);
+
         mMap.setOnMarkerClickListener(marker -> {
             onPostImageClick(marker);
             Toast.makeText(HomeActivity.this, "Marker clicked", Toast.LENGTH_SHORT).show();

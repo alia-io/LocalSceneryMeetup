@@ -75,5 +75,15 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
         messageRecyclerAdapter.onSendNewMessage(messageText);
+        newMessageText.setText("");
+    }
+
+    @Override
+    public void onBackPressed() { finish(); }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        messageRecyclerAdapter.removeListener();
     }
 }

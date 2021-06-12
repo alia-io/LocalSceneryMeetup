@@ -10,8 +10,9 @@ public class User {
     public String displayName;
     public String emailAddress;
     public String phoneNumber;
+    public String profilePicture;
     public Object timestamp;
-    public Map<String, String> chats = new HashMap<String, String>();
+    public Map<String, String> chats = new HashMap<>();
 
     public User() { }
 

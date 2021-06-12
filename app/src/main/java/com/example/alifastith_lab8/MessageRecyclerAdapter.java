@@ -1,5 +1,6 @@
 package com.example.alifastith_lab8;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,11 +36,11 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference allUsersRef = database.getReference("Users");
-    private DatabaseReference currentChatListener;
+    private DatabaseReference allUsersRef = database.getReference("/Users");
+    private DatabaseReference currentChatRef;
+    private ChildEventListener currentChatListener;
 
-    private SimpleDateFormat localDateFormat = new SimpleDateFormat("MMM dd, yyyy");
-    private SimpleDateFormat localTimeFormat = new SimpleDateFormat("HH:mm:ss");
+    private SimpleDateFormat localDateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
 
     private String selfUid;
     private String targetUid;
@@ -57,37 +58,49 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
         messageList = new ArrayList<>();
         this.recyclerView = recyclerView;
 
+        Log.d("User", "selfUid = " + selfUid);
+        Log.d("User", "targetUid = " + targetUid);
+
         // Get the chat UUID & set currentChatListener database reference
-        allUsersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        allUsersRef.child(selfUid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                User selfU = snapshot.child(selfUid).getValue(User.class);
-                if (selfU.chats.containsKey(targetUid)) { // Chat already exists
+                User selfU = snapshot.getValue(User.class);
+                Log.d("User", "chats.size() = " + selfU.chats.size());
+                Log.d("User", "selfU.displayName = " + selfU.displayName);
+                if (snapshot.hasChild("chats") && selfU.chats.containsKey(targetUid)) { // Chat already exists
                     String chatUUID = selfU.chats.get(targetUid);
-                    currentChatListener = database.getReference("Chats/" + chatUUID);
+                    currentChatRef = database.getReference("Chats/" + chatUUID);
                     setChatListener();
                 } else { // Chat doesn't exist - make a new chat UUID
                     allUsersRef.runTransaction(new Transaction.Handler() {
                         @NonNull @Override
                         public Transaction.Result doTransaction(@NonNull MutableData currentData) {
+                            Log.d("User", "currentData = " + currentData);
                             User selfUser = currentData.child(selfUid).getValue(User.class);
                             User targetUser = currentData.child(targetUid).getValue(User.class);
-                            if (selfUser.chats.containsKey(targetUid)) { // Make sure the other user didn't add chat first
+                            if (selfUser == null || targetUser == null)
+                                return Transaction.success(currentData);
+                            Log.d("User", "selfUser = " + selfUser);
+                            Log.d("User", "targetUser = " + targetUser);
+                            if (currentData.hasChild("chats") && selfUser.chats.containsKey(targetUid)) { // Make sure the other user didn't add chat first
                                 String chatUUID = selfUser.chats.get(targetUid);
-                                currentChatListener = database.getReference("Chats/" + chatUUID);
+                                currentChatRef = database.getReference("Chats/" + chatUUID);
                             } else {
                                 final String newChatUUID = UUID.randomUUID().toString();
                                 selfUser.chats.put(targetUid, newChatUUID);
                                 targetUser.chats.put(selfUid, newChatUUID);
                                 currentData.child(selfUid).setValue(selfUser); // Push new chat to current user chats list
                                 currentData.child(targetUid).setValue(targetUser); // Push new chat to target user chats list
-                                currentChatListener = database.getReference("Chats/" + newChatUUID);
+                                currentChatRef = database.getReference("Chats/" + newChatUUID);
                             }
                             setChatListener();
                             return Transaction.success(currentData);
                         }
                         @Override public void onComplete(@Nullable DatabaseError error, boolean committed, @Nullable DataSnapshot currentData) { }
                     });
+
+
                 }
             }
             @Override public void onCancelled(@NonNull DatabaseError error) { }
@@ -95,7 +108,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
     }
 
     private void setChatListener() {
-        currentChatListener.addChildEventListener(new ChildEventListener() {
+        currentChatListener = currentChatRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 MessageModel messageModel = new MessageModel(snapshot.getKey(), snapshot.child("sender").getValue().toString(),
@@ -131,6 +144,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
         if (lastDate == null || !lastDate.equals(messageModel.date)) {
             holder.dateView.setText(messageModel.date);
             holder.dateView.setVisibility(View.VISIBLE);
+            lastDate = messageModel.date;
         } else holder.dateView.setVisibility(View.GONE);
 
         holder.messageView.setText(messageModel.message);
@@ -147,13 +161,24 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
         }
     }
 
+    public void removeListener() {
+        if (currentChatRef != null && currentChatListener != null)
+            currentChatRef.removeEventListener(currentChatListener);
+    }
+
     @Override
     public int getItemCount() {
         return messageList.size();
     }
 
     public void onSendNewMessage(String messageText) {
-        currentChatListener.push().setValue(new Message(selfUid, targetUid, messageText));
+        Message newMessage = new Message(selfUid, targetUid, messageText);
+
+
+
+
+        currentChatRef.push().setValue(newMessage);
+
     }
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {

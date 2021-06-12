@@ -27,19 +27,4 @@ public class Post {
         this.longitude = longitude;
         this.timestamp = ServerValue.TIMESTAMP;
     }
-
-    public void updatePost(String url, String description, String latitude, String longitude) {
-
-        if (url != null && !this.url.equals(url)) {
-            this.url = url;
-            this.latitude = latitude;
-            this.longitude = longitude;
-            this.lastEditTimestamp = ServerValue.TIMESTAMP;
-        }
-
-        if (description != null && !this.description.equals(description)) {
-            this.description = description;
-            this.lastEditTimestamp = ServerValue.TIMESTAMP;
-        }
-    }
 }
