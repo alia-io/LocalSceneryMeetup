@@ -19,9 +19,7 @@ public class MessageModel {
 
         int index = timestamp.lastIndexOf(" ");
         this.date = timestamp.substring(0, index);
-        this.time = timestamp.substring(index + 1, timestamp.length() - 1);
-        Log.d("Time", "timestamp = " + timestamp);
-        Log.d("Time", "date = " + date);
-        Log.d("Time", "time = " + time);
+        this.time = timestamp.substring(index + 1);
+        Log.d("Date", "date = " + date);
     }
 }

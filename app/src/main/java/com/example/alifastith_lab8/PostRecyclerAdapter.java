@@ -131,6 +131,8 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<PostRecyclerAdapte
         // Set profile image click handler
         if (!currentUser.getUid().equals(uid)) {
             holder.profileImage.setOnClickListener(v -> {
+
+
                 Intent intent = new Intent(v.getContext(), ChatActivity.class);
                 intent.putExtra("target_uid", uid);
                 v.getContext().startActivity(intent);

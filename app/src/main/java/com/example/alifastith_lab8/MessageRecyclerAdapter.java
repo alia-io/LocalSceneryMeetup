@@ -36,7 +36,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference allUsersRef = database.getReference("/Users");
+    private DatabaseReference allUsersRef = database.getReference("Users");
     private DatabaseReference currentChatRef;
     private ChildEventListener currentChatListener;
 
@@ -45,7 +45,6 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
     private String selfUid;
     private String targetUid;
     private List<MessageModel> messageList;
-    private String lastDate = null;
     private RecyclerView recyclerView;
 
     public MessageRecyclerAdapter(final RecyclerView recyclerView, final String targetUid) {
@@ -58,16 +57,11 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
         messageList = new ArrayList<>();
         this.recyclerView = recyclerView;
 
-        Log.d("User", "selfUid = " + selfUid);
-        Log.d("User", "targetUid = " + targetUid);
-
         // Get the chat UUID & set currentChatListener database reference
         allUsersRef.child(selfUid).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 User selfU = snapshot.getValue(User.class);
-                Log.d("User", "chats.size() = " + selfU.chats.size());
-                Log.d("User", "selfU.displayName = " + selfU.displayName);
                 if (snapshot.hasChild("chats") && selfU.chats.containsKey(targetUid)) { // Chat already exists
                     String chatUUID = selfU.chats.get(targetUid);
                     currentChatRef = database.getReference("Chats/" + chatUUID);
@@ -76,13 +70,10 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
                     allUsersRef.runTransaction(new Transaction.Handler() {
                         @NonNull @Override
                         public Transaction.Result doTransaction(@NonNull MutableData currentData) {
-                            Log.d("User", "currentData = " + currentData);
                             User selfUser = currentData.child(selfUid).getValue(User.class);
                             User targetUser = currentData.child(targetUid).getValue(User.class);
                             if (selfUser == null || targetUser == null)
                                 return Transaction.success(currentData);
-                            Log.d("User", "selfUser = " + selfUser);
-                            Log.d("User", "targetUser = " + targetUser);
                             if (currentData.hasChild("chats") && selfUser.chats.containsKey(targetUid)) { // Make sure the other user didn't add chat first
                                 String chatUUID = selfUser.chats.get(targetUid);
                                 currentChatRef = database.getReference("Chats/" + chatUUID);
@@ -140,12 +131,21 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
         String sender = messageModel.sender;
         String receiver = messageModel.receiver;
 
+        Log.d("Date", "position = " + position);
+        Log.d("Date", "date = " + messageModel.date);
+
         // Show date if new
-        if (lastDate == null || !lastDate.equals(messageModel.date)) {
+        if (position == 0 || !messageList.get(position - 1).date.equals(messageModel.date)) {
             holder.dateView.setText(messageModel.date);
             holder.dateView.setVisibility(View.VISIBLE);
-            lastDate = messageModel.date;
-        } else holder.dateView.setVisibility(View.GONE);
+            holder.dateView.setPadding(0, 0, 0, 10);
+            holder.constraintSet.connect(holder.messageLayoutId, ConstraintSet.TOP, holder.dateViewId, ConstraintSet.BOTTOM);
+            Log.d("Date", "dateView text = " + holder.dateView.getText());
+        } else {
+            holder.dateView.setVisibility(View.GONE);
+            holder.dateView.setPadding(0, 0, 0, 0);
+            holder.constraintSet.connect(holder.messageLayoutId, ConstraintSet.TOP, holder.parentLayoutId, ConstraintSet.TOP);
+        }
 
         holder.messageView.setText(messageModel.message);
         holder.timeView.setText(messageModel.time);
@@ -159,6 +159,7 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
             holder.constraintSet.clear(holder.messageLayoutId, ConstraintSet.RIGHT);
             holder.constraintSet.connect(holder.messageLayoutId, ConstraintSet.LEFT, holder.parentLayoutId, ConstraintSet.LEFT);
         }
+        holder.constraintSet.applyTo(holder.parentLayout);
     }
 
     public void removeListener() {
@@ -167,18 +168,10 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
     }
 
     @Override
-    public int getItemCount() {
-        return messageList.size();
-    }
+    public int getItemCount() { return messageList.size(); }
 
     public void onSendNewMessage(String messageText) {
-        Message newMessage = new Message(selfUid, targetUid, messageText);
-
-
-
-
-        currentChatRef.push().setValue(newMessage);
-
+        currentChatRef.push().setValue(new Message(selfUid, targetUid, messageText));
     }
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
@@ -186,20 +179,22 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
         public ConstraintSet constraintSet;
         public ConstraintLayout parentLayout;
         public LinearLayout messageLayout;
-        public int parentLayoutId;
-        public int messageLayoutId;
         public TextView messageView;
         public TextView dateView;
         public TextView timeView;
+        public int parentLayoutId;
+        public int messageLayoutId;
+        public int dateViewId;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
             parentLayoutId = R.id.message_layout;
             messageLayoutId = R.id.message_body;
+            dateViewId = R.id.message_date;
             parentLayout = itemView.findViewById(parentLayoutId);
             messageLayout = itemView.findViewById(messageLayoutId);
             messageView = itemView.findViewById(R.id.message_text);
-            dateView = itemView.findViewById(R.id.message_date);
+            dateView = itemView.findViewById(dateViewId);
             timeView = itemView.findViewById(R.id.message_time);
             constraintSet = new ConstraintSet();
             constraintSet.clone(parentLayout);
