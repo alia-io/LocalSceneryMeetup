@@ -60,7 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 
 // https://console.firebase.google.com/
-public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback, ItemClickListener {
+public class HomeActivity extends AppCompatActivity implements OnMapReadyCallback, PostItemClickListener {
 
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -332,66 +332,6 @@ public class HomeActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
         }
     }
-
-    /*public MyRecyclerAdapter(RecyclerView recyclerView, ItemClickListener itemClickListener, List<String> keyList, HashMap<String, PostModel> keyToPost) {
-
-        postsList = new ArrayList<>();
-        this.recyclerView = recyclerView;
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-
-        postsRefListener = allPostsRef.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                String update = null;
-                if (snapshot.hasChild("lastEditTimestamp"))
-                    update = localDateFormat.format(new Date(Long.parseLong(snapshot.child("lastEditTimestamp").getValue().toString())));
-                PostModel postModel = new PostModel(snapshot.getKey(),
-                        snapshot.child("uid").getValue().toString(),
-                        snapshot.child("description").getValue().toString(),
-                        snapshot.child("url").getValue().toString(),
-                        localDateFormat.format(new Date(Long.parseLong(snapshot.child("timestamp").getValue().toString()))),
-                        update);
-                postsList.add(postModel);
-                notifyItemInserted(postsList.size() - 1);
-                recyclerView.scrollToPosition(postsList.size() - 1);
-            }
-
-            @Override public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                for (int i = 0; i < postsList.size(); i++) {
-                    if (postsList.get(i).postKey.equals(snapshot.getKey())) {
-                        String update = null;
-                        if (snapshot.hasChild("lastEditTimestamp"))
-                            update = localDateFormat.format(new Date(Long.parseLong(snapshot.child("lastEditTimestamp").getValue().toString())));
-                        PostModel userModel = new PostModel(snapshot.getKey(),
-                                snapshot.child("uid").getValue().toString(),
-                                snapshot.child("description").getValue().toString(),
-                                snapshot.child("url").getValue().toString(),
-                                localDateFormat.format(new Date(Long.parseLong(snapshot.child("timestamp").getValue().toString()))),
-                                update);
-                        postsList.remove(i);
-                        postsList.add(i, userModel);
-                        notifyItemChanged(i);
-                        recyclerView.scrollToPosition(i);
-                        break;
-                    }
-                }
-            }
-
-            @Override public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                for (int i = 0; i < postsList.size(); i++) {
-                    if (postsList.get(i).postKey.equals(snapshot.getKey())) {
-                        postsList.remove(i);
-                        notifyItemRemoved(i);
-                        break;
-                    }
-                }
-            }
-
-            @Override public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) { }
-            @Override public void onCancelled(@NonNull DatabaseError error) { }
-        });
-    }*/
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {

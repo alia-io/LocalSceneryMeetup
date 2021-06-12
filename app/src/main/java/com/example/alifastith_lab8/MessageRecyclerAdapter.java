@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -122,10 +123,6 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
 
-        // Reset layout
-        //holder.layout.setBackground(null);
-        //holder.parent.setConstraintSet();
-
         MessageModel messageModel = messageList.get(position);
         String sender = messageModel.sender;
         String receiver = messageModel.receiver;
@@ -153,6 +150,10 @@ public class MessageRecyclerAdapter extends RecyclerView.Adapter<MessageRecycler
     @Override
     public int getItemCount() {
         return messageList.size();
+    }
+
+    public void onSendNewMessage(String messageText) {
+        currentChatListener.push().setValue(new Message(selfUid, targetUid, messageText));
     }
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {

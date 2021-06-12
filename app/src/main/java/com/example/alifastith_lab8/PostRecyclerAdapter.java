@@ -49,13 +49,13 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<PostRecyclerAdapte
     private SimpleDateFormat localDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     private Marker currentMarker = null;
-    private ItemClickListener itemClickListener;
+    private PostItemClickListener postItemClickListener;
     private RecyclerView recyclerView;
 
-    public PostRecyclerAdapter(ItemClickListener itemClickListener, RecyclerView recyclerView, List<String> keyList, HashMap<String, PostModel> keyToPost) {
+    public PostRecyclerAdapter(PostItemClickListener postItemClickListener, RecyclerView recyclerView, List<String> keyList, HashMap<String, PostModel> keyToPost) {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
-        this.itemClickListener = itemClickListener;
+        this.postItemClickListener = postItemClickListener;
         this.recyclerView = recyclerView;
         this.keyList = keyList;
         this.keyToPost = keyToPost;
@@ -149,12 +149,12 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<PostRecyclerAdapte
                     final int deleteActionId = R.id.delete_post;
                     switch (item.getItemId()) {
                         case editActionId: // Edit action
-                            if (itemClickListener != null)
-                                itemClickListener.onPostEditClick(key, postModel.url);
+                            if (postItemClickListener != null)
+                                postItemClickListener.onPostEditClick(key, postModel.url);
                             return true;
                         case deleteActionId: // Delete action
-                            if (itemClickListener != null)
-                                itemClickListener.onPostDeleteClick(key, postModel.url);
+                            if (postItemClickListener != null)
+                                postItemClickListener.onPostDeleteClick(key, postModel.url);
                             return true;
                         default:
                             return false;
@@ -272,8 +272,8 @@ public class PostRecyclerAdapter extends RecyclerView.Adapter<PostRecyclerAdapte
         }));
 
         holder.imageView.setOnClickListener(v -> {
-            if (itemClickListener != null)
-                itemClickListener.onPostImageClick(postModel.marker);
+            if (postItemClickListener != null)
+                postItemClickListener.onPostImageClick(postModel.marker);
         });
     }
 
